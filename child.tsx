@@ -1,64 +1,176 @@
-import {Alert, Pressable, StyleSheet, Text, View} from 'react-native';
-import React, {forwardRef, useImperativeHandle, useState} from 'react';
+import {
+  Alert,
+  Dimensions,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 
 export type ChildType = {
-  handleChildButton: () => void;
-  up: () => void;
-  down: () => void;
+  next: () => void;
+  prev: () => void;
 };
 
-interface IProps {}
+interface IProps {
+  DATA?: any;
+}
 
-export const Child = forwardRef((props, ref) => {
-  const [counter, setCounter] = useState(0);
-
+export const Child = forwardRef(({DATA}: IProps, ref) => {
   useImperativeHandle(ref, () => ({
-    handleChildButton: () => handleButton(),
-    up: () => counterUp(),
-    down: () => counterDown(),
+    next: () => goNextSlide(),
+    prev: () => goPrevtSlide(),
   }));
 
-  const handleButton = () => {
-    Alert.alert('Benja');
+  const slidesRef = useRef<FlatList>(null);
+  const {height} = Dimensions.get('screen');
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [disabledPrev, setDisablePrev] = useState(true);
+  const [disabledNext, setDisableNext] = useState(false);
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    controlContainer: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      position: 'absolute',
+      top: height * 0.42,
+    },
+    controlBtn: {
+      width: 50,
+      height: 50,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 100,
+      backgroundColor: 'white',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.2,
+      shadowRadius: 1.41,
+      elevation: 2,
+      zIndex: 1,
+    },
+    icon: {
+      fontSize: 18,
+      color: 'black',
+    },
+    disabled: {
+      color: '#c7c7c7',
+    },
+    indicatorContainer: {
+      display: 'flex',
+    },
+    indicatorRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    indicator: {
+      width: 20,
+      height: 20,
+      borderRadius: 20,
+      marginHorizontal: 10,
+    },
+    indicatorActive: {
+      backgroundColor: 'blue',
+    },
+    indicatorInactive: {
+      backgroundColor: '#c7c7c7',
+    },
+  });
+
+  const handleScroll = (event: any) => {
+    const totalWidth = event.nativeEvent.layoutMeasurement.width;
+    const xPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(xPosition / totalWidth);
+    setCurrentSlide(index);
   };
 
-  const counterUp = () => {
-    setCounter(counter + 1);
+  const goNextSlide = () => {
+    slidesRef.current!.scrollToIndex({
+      index: currentSlide < DATA.length - 1 ? currentSlide + 1 : 0,
+      animated: true,
+    });
+    setCurrentSlide(currentSlide + 1);
   };
 
-  const counterDown = () => {
-    if (counter > 0) setCounter(counter - 1);
+  const goPrevtSlide = () => {
+    slidesRef.current!.scrollToIndex({
+      index: currentSlide ? currentSlide - 1 : DATA.length - 1,
+      animated: true,
+    });
+    setCurrentSlide(currentSlide - 1);
+  };
+
+  function renderItem(item: any) {
+    return item.item.description;
+  }
+
+  const renderIndicator = (index: any) => {
+    return (
+      <View
+        style={[
+          styles.indicator,
+          currentSlide === index
+            ? styles.indicatorActive
+            : styles.indicatorInactive,
+        ]}
+        key={index}
+      />
+    );
   };
 
   return (
-    <View style={styles.child}>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text style={{fontSize: 100, color: 'black'}}>{counter}</Text>
+    <View style={styles.container}>
+      <FlatList
+        data={DATA}
+        ref={slidesRef}
+        horizontal
+        renderItem={item => renderItem(item)}
+        keyExtractor={(_, index) => index.toString()}
+        showsHorizontalScrollIndicator={false}
+        pagingEnabled
+        decelerationRate={'fast'}
+        onScroll={handleScroll}
+      />
+      <View style={styles.controlContainer}>
+        <Pressable
+          style={styles.controlBtn}
+          onPress={goPrevtSlide}
+          disabled={disabledPrev}>
+          <Text style={[styles.icon, disabledPrev && styles.disabled]}>
+            {'izq'}
+          </Text>
+        </Pressable>
+        <Pressable
+          style={styles.controlBtn}
+          onPress={goNextSlide}
+          disabled={disabledNext}>
+          <Text style={[styles.icon, disabledNext && styles.disabled]}>
+            {'der'}
+          </Text>
+        </Pressable>
       </View>
-      {/* <Pressable style={styles.childBtn} onPress={handleButton}>
-        <Text style={styles.label}>child</Text>
-      </Pressable> */}
+      <View style={styles.indicatorContainer}>
+        <View style={styles.indicatorRow}>
+          {DATA.map((_: any, index: any) => renderIndicator(index))}
+        </View>
+      </View>
     </View>
   );
-});
-
-const styles = StyleSheet.create({
-  label: {
-    color: 'white',
-    fontSize: 20,
-  },
-  child: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  childBtn: {
-    backgroundColor: 'orange',
-    minWidth: 360,
-    minHeight: 50,
-    borderRadius: 50,
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 });

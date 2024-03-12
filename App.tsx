@@ -1,81 +1,70 @@
 import React, {useRef} from 'react';
-import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import {
+  Dimensions,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {Child, ChildType} from './child';
 
 function App(): React.JSX.Element {
   const ref = useRef<ChildType>(null);
+  const width = Dimensions.get('window').width;
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+    },
+    slide: {
+      flex: 1,
+      width: width * 0.9,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    labelSlide: {
+      fontSize: 40,
+    },
+  });
+
+  const DATA = [
+    {
+      id: 1,
+      description: (
+        <View style={styles.slide}>
+          <Text style={[styles.labelSlide, {color: 'blue'}]}>UNO</Text>
+        </View>
+      ),
+    },
+    {
+      id: 2,
+      description: (
+        <View style={styles.slide}>
+          <Text style={[styles.labelSlide, {color: 'red'}]}>DOS</Text>
+        </View>
+      ),
+    },
+    {
+      id: 3,
+      description: (
+        <View style={styles.slide}>
+          <Text style={[styles.labelSlide, {color: 'green'}]}>TRES</Text>
+        </View>
+      ),
+    },
+  ];
 
   const handleButton = () => {
-    ref.current?.handleChildButton();
-  };
-
-  const sumar = () => {
-    ref.current?.up();
-  };
-
-  const restar = () => {
-    ref.current?.down();
+    ref.current?.next();
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Child ref={ref} />
-      <View style={styles.parent}>
-        <View
-          style={{
-            width: '50%',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <Pressable style={styles.counterButton} onPress={sumar}>
-            <Text style={styles.label}>+</Text>
-          </Pressable>
-          <Pressable style={styles.counterButton} onPress={restar}>
-            <Text style={styles.label}>-</Text>
-          </Pressable>
-        </View>
-        {/* <Pressable style={styles.parentBtn} onPress={handleButton}>
-          <Text style={styles.label}>Parent</Text>
-        </Pressable> */}
-      </View>
+      <Child ref={ref} DATA={DATA} />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ebebeb',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  parent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  parentBtn: {
-    backgroundColor: 'blue',
-    width: 360,
-    minHeight: 50,
-    borderRadius: 50,
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  label: {
-    color: 'white',
-    fontSize: 40,
-  },
-  counterButton: {
-    backgroundColor: 'grey',
-    width: 80,
-    height: 80,
-    borderRadius: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default App;
