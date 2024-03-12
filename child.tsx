@@ -94,6 +94,20 @@ export const Child = forwardRef(({DATA}: IProps, ref) => {
     },
   });
 
+  useEffect(() => {
+    if (currentSlide === 0) {
+      setDisablePrev(true);
+    } else {
+      setDisablePrev(false);
+    }
+
+    if (currentSlide === DATA.length - 1) {
+      setDisableNext(true);
+    } else {
+      setDisableNext(false);
+    }
+  }, [currentSlide]);
+
   const handleScroll = (event: any) => {
     const totalWidth = event.nativeEvent.layoutMeasurement.width;
     const xPosition = event.nativeEvent.contentOffset.x;
@@ -106,7 +120,6 @@ export const Child = forwardRef(({DATA}: IProps, ref) => {
       index: currentSlide < DATA.length - 1 ? currentSlide + 1 : 0,
       animated: true,
     });
-    setCurrentSlide(currentSlide + 1);
   };
 
   const goPrevtSlide = () => {
@@ -114,7 +127,6 @@ export const Child = forwardRef(({DATA}: IProps, ref) => {
       index: currentSlide ? currentSlide - 1 : DATA.length - 1,
       animated: true,
     });
-    setCurrentSlide(currentSlide - 1);
   };
 
   function renderItem(item: any) {
